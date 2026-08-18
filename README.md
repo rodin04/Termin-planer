@@ -1,70 +1,69 @@
 # 📌 Raspberry Pi 5 Event & Task Manager
 
-A simple dark-mode web app running on Raspberry Pi 5 to manage appointments and To-Dos with 1-day email reminders and red-to-green priority cards.
+A simple dark-mode web app running on Raspberry Pi 5. It helps you manage appointments and To-Dos with 1-day email reminders and red-to-green priority cards.
 
 <p align="center">
   <img src="termin-manager-1.png" alt="Termin Manager Preview" width="600" style="max-width: 100%; height: auto; border-radius: 12px;">
 </p>
 
 ## ✨ Features
-- **Smart UI:** Modern Apple-style dark mode with color-coded priority cards (red to green).
-- **Email Reminders:** Automatic email notification sent 1 day before an appointment.
-- **Auto-Cleanup:** Completed tasks are automatically deleted every day at midnight (0:00).
-- **Full Control:** Easily add, edit, and delete events or To-Dos directly in the web interface.
+- **Smart UI:** Modern dark mode with red, yellow, and green cards based on urgency.
+- **Email Reminders:** Gets an email notification 1 day before an appointment.
+- **Auto-Cleanup:** Deletes finished tasks automatically every night at midnight (0:00).
+- **Easy Control:** Add, edit, and delete events or To-Dos directly in your browser.
 
 ## 📁 File Structure
 
-- **backend.py** — Flask backend & background tasks
-- **start.sh** — Management script (Start/Restart/Kill)
-- **events.db / todos.db** — SQLite database (auto-created)
-- **app.log** — Background execution log file
-- **termin-manager-1.png** — Preview screenshot
-- **frontend/template/index.html** — Apple-style Dark Mode Web UI
+- **backend.py** — Python server and background tasks
+- **start.sh** — Easy script to start, restart, or stop the app
+- **events.db / todos.db** — SQLite database files (created automatically)
+- **app.log** — Log file for background activity
+- **termin-manager-1.png** — Preview picture
+- **frontend/template/index.html** — Dark Mode Web Interface
 
 ## 💾 Database & Storage
 
-Instead of raw text files or heavy external database servers, the application uses **SQLite3** (`events.db` / `todos.db`). 
+The app uses **SQLite3** (`events.db` and `todos.db`) to save data safely.
 
-- **Zero-Configuration:** SQLite stores everything inside a single local database file directly in the project directory.
-- **Reliability:** Prevents data corruption compared to plain `.txt` files when reading and writing simultaneously.
-- **Auto-Initialization:** The database tables are automatically created on the first run of `backend.py`.
+- **Simple Setup:** Everything is saved in local files. No complex database server needed.
+- **Safe Data:** Works much better than simple `.txt` files when reading and writing data.
+- **Auto-Create:** Tables are created automatically when you run `backend.py` for the first time.
 
-## 🔍 Code Insights & Logic
+## 🔍 How It Works
 
-### 🌐 Network & Remote Access via Tailscale
-The backend server runs directly on the **Raspberry Pi 5** within a private **Tailscale VPN network**. This architecture allows secure access to the web interface from anywhere without exposing ports to the public internet:
+### 🌐 Secure Remote Access with Tailscale
+The app runs on your **Raspberry Pi 5** inside a private **Tailscale VPN network**. This means you can open the app safely from anywhere without opening public ports:
 
-1. **Host System:** The Raspberry Pi 5 hosts the Flask server and SQLite database locally.
-2. **Secure Requests:** Any connected client device (e.g., your smartphone) sends HTTP requests through the encrypted Tailscale mesh network.
-3. **Background Services:**
-   - **Threaded Mail Dispatcher:** Checks upcoming events every minute and triggers SMTP email alerts 24 hours prior.
-   - **Midnight Auto-Cleanup:** Automatically purges completed tasks every day at 0:00 midnight.
-   - **Nohup Execution:** Managed via `start.sh`, ensuring the backend runs persistently even after closing SSH sessions.
-  
+1. **Host:** The Raspberry Pi 5 runs the Flask server and SQLite database locally.
+2. **Connection:** Your phone or PC connects securely through the encrypted Tailscale network.
+3. **Background Tasks:**
+   - **Mail System:** Checks upcoming events and sends email alerts 24 hours before.
+   - **Midnight Cleanup:** Deletes finished tasks every night at midnight.
+   - **Background Running:** The `start.sh` script keeps the server active even when you close the SSH terminal.
 
-## 📸 Code Highlights & Core Components
+## 📸 Code Highlights & Key Functions
 
-### 1. Multithreaded Background Execution (`backend.py`)
+### 1. Running Tasks in Background (`backend.py`)
 <p align="center">
   <img src="code-view-1.png" alt="Threading Setup" width="650" style="max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #333;">
 </p>
 
-* **Asynchronous Execution:** Launches the email scheduler on an independent Python background thread (`daemon=True`). This guarantees that heavy background operations never block incoming HTTP requests or slow down the web interface UI.
+* **Background Thread:** Starts the email checker on an extra background thread (`daemon=True`). This keeps the web interface fast because background tasks do not block incoming HTTP requests.
 
 ---
 
-### 2. Midnight Timer & Cron Logic (`backend.py`)
+### 2. Midnight Timer Logic (`backend.py`)
 <p align="center">
   <img src="code-view-2.png" alt="Midnight Calculation" width="650" style="max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #333;">
 </p>
 
-* **Smart Sleep Calculation:** Instead of querying the database constantly every second, the script dynamically calculates the exact remaining seconds until 0:00 AM (`seconds_until_midnight`) and puts the thread to sleep until the next day triggers.
+* **Smart Sleep:** Calculates the exact seconds until midnight (`seconds_until_midnight`). The app sleeps until midnight instead of checking the database every second. This saves CPU power.
 
 ---
 
-### 3. Persistent Process Launch (`start.sh`)
+### 3. Keeping the App Alive (`start.sh`)
 <p align="center">
   <img src="code-view-3.png" alt="Nohup Launch" width="650" style="max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #333;">
 </p>
 
-* **Persistent Background Hosting:** Executes the Flask application using `nohup` combined with `&`. This keeps the application running continuously on the Raspberry Pi 5 even after closing SSH terminal connections, while redirecting all system logs to `app.log`.
+* **Background Execution:** Starts the server using `nohup` and `&`. This keeps the app running continuously on the Raspberry Pi 5 even if you disconnect from SSH, and saves all outputs to `app.log`.
