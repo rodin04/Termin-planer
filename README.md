@@ -11,7 +11,20 @@ A simple dark-mode web app running on Raspberry Pi 5 to manage appointments and 
 - **Email Reminders:** Automatic email notification sent 1 day before an appointment.
 - **Auto-Cleanup:** Completed tasks are automatically deleted every day at midnight (0:00).
 - **Full Control:** Easily add, edit, and delete events or To-Dos directly in the web interface.
-- 
+
+## 📁 File Structure
+
+```text
+├── backend.py            # Flask backend & background tasks
+├── start.sh              # Management script (Start/Restart/Kill)
+├── events.db / todos.db  # SQLite database (auto-created)
+├── app.log               # Background execution log file
+├── termin-manager-1.png  # Preview screenshot
+└── frontend/
+    └── template/
+        └── index.html    # Apple-style Dark Mode Web UI
+```
+
 ## 🔍 Code Insights & Logic
 
 ### 🌐 Network & Remote Access via Tailscale
