@@ -40,3 +40,18 @@ The backend server runs directly on the **Raspberry Pi 5** within a private **Ta
    - **Threaded Mail Dispatcher:** Checks upcoming events every minute and triggers SMTP email alerts 24 hours prior.
    - **Midnight Auto-Cleanup:** Automatically purges completed tasks every day at 0:00 midnight.
    - **Nohup Execution:** Managed via `start.sh`, ensuring the backend runs persistently even after closing SSH sessions.
+  
+
+## 📸 Code Highlights & Core Components
+
+<p align="center">
+  <img src="code-preview-1.png" alt="Backend Threading & Scripting Preview" width="700" style="max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #333;">
+</p>
+
+### ⚡ Key Implementations Explained:
+
+* **Multithreaded Background Scheduler (`backend.py`):**
+  The email dispatcher runs on an independent Python daemon thread (`threading.Thread(..., daemon=True)`). This ensures that heavy tasks like SMTP socket connections and database polling never block or slow down incoming HTTP API requests from the frontend UI.
+
+* **Process Management & Auto-Healing (`start.sh`):**
+  The Shell script dynamically detects active running instances using `pgrep`. If an instance is found, it safely prompts for a restart and terminates the old process ID before launching `nohup`. It captures process execution logs directly into `app.log` and verifies process startup via PID tracking (`$!`).
