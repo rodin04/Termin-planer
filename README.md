@@ -14,16 +14,20 @@ A simple dark-mode web app running on Raspberry Pi 5 to manage appointments and 
 
 ## 📁 File Structure
 
-```text
-├── backend.py            # Flask backend & background tasks
-├── start.sh              # Management script (Start/Restart/Kill)
-├── events.db / todos.db  # SQLite database (auto-created)
-├── app.log               # Background execution log file
-├── termin-manager-1.png  # Preview screenshot
-└── frontend/
-    └── template/
-        └── index.html    # Apple-style Dark Mode Web UI
-```
+- **backend.py** — Flask backend & background tasks
+- **start.sh** — Management script (Start/Restart/Kill)
+- **events.db / todos.db** — SQLite database (auto-created)
+- **app.log** — Background execution log file
+- **termin-manager-1.png** — Preview screenshot
+- **frontend/template/index.html** — Apple-style Dark Mode Web UI
+
+## 💾 Database & Storage
+
+Instead of raw text files or heavy external database servers, the application uses **SQLite3** (`events.db` / `todos.db`). 
+
+- **Zero-Configuration:** SQLite stores everything inside a single local database file directly in the project directory.
+- **Reliability:** Prevents data corruption compared to plain `.txt` files when reading and writing simultaneously.
+- **Auto-Initialization:** The database tables are automatically created on the first run of `backend.py`.
 
 ## 🔍 Code Insights & Logic
 
