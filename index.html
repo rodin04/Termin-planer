@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termine & Erinnerungen</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: rgba(28, 28, 30, 0.75);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --text-primary: #f5f5f7;
+            --text-secondary: #8e8e93;
+            --accent-blue: #0a84ff;
+            --accent-red: #ff453a;
+            --accent-yellow: #ffd60a;
+            --accent-green: #30d158;
+            --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0 0 8px 0;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin: 0;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 35px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            box-sizing: border-box;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        button.btn-primary {
+            background: var(--accent-blue);
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+        }
+
+        button.btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .tile {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .tile:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+        }
+
+        .tile::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+        }
+
+        .urgent-red { border-color: rgba(255, 69, 58, 0.3); }
+        .urgent-red::before { background: var(--accent-red); }
+
+        .medium-yellow { border-color: rgba(255, 214, 10, 0.3); }
+        .medium-yellow::before { background: var(--accent-yellow); }
+
+        .far-green { border-color: rgba(48, 209, 88, 0.3); }
+        .far-green::before { background: var(--accent-green); }
+
+        .past-grey { opacity: 0.5; border-color: rgba(255,255,255,0.05); }
+        .past-grey::before { background: var(--text-secondary); }
+
+        .tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .tile h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .tile p {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .badge-red { background: rgba(255, 69, 58, 0.15); color: var(--accent-red); }
+        .badge-yellow { background: rgba(255, 214, 10, 0.15); color: var(--accent-yellow); }
+        .badge-green { background: rgba(48, 209, 88, 0.15); color: var(--accent-green); }
+        .badge-grey { background: rgba(255, 255, 255, 0.1); color: var(--text-secondary); }
+
+        .time-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 12px;
+        }
+
+        .btn-action {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-action.delete:hover {
+            color: var(--accent-red);
+            background: rgba(255, 69, 58, 0.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1c1c1e;
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Termine</h1>
+        <p>Erinnerungs-Manager & Dashboard</p>
+    </header>
+
+    <div class="form-card">
+        <form id="add-form">
+            <div class="form-group">
+                <label>Titel</label>
+                <input type="text" id="title" required placeholder="z. B. Arzttermin oder Meeting">
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="margin:0;">
+                    <label>Datum & Uhrzeit</label>
+                    <input type="datetime-local" id="event_date" required>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Beschreibung (optional)</label>
+                    <input type="text" id="description" placeholder="Kurze Notiz...">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 15px;">Termin hinzufügen</button>
+        </form>
+    </div>
+
+    <div id="events-grid" class="grid"></div>
+</div>
+
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-size:20px;">Termin bearbeiten</h3>
+        <form id="edit-form">
+            <input type="hidden" id="edit-id">
+            <div class="form-group">
+                <label>Titel</label>
+                <input type="text" id="edit-title" required>
+            </div>
+            <div class="form-group">
+                <label>Beschreibung</label>
+                <input type="text" id="edit-description">
+            </div>
+            <div class="form-group">
+                <label>Datum & Uhrzeit</label>
+                <input type="datetime-local" id="edit-event_date" required>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top:10px;">Speichern</button>
+            <button type="button" class="btn-action" onclick="closeModal()" style="width:100%; margin-top:8px; text-align:center;">Abbrechen</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/events';
+
+    async function loadEvents() {
+        const res = await fetch(API_URL);
+        const events = await res.json();
+        const grid = document.getElementById('events-grid');
+        grid.innerHTML = '';
+
+        const now = new Date();
+        const todayStr = now.toDateString();
+
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toDateString();
+
+        const dayAfterTomorrow = new Date(now);
+        dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+        const dayAfterTomorrowStr = dayAfterTomorrow.toDateString();
+
+        events.forEach(ev => {
+            const evDate = new Date(ev.event_date);
+            const evDateStr = evDate.toDateString();
+            const timeFormatted = evDate.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            const fullDateFormatted = evDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            let relativeBadgeText = '';
+            let tileClass = '';
+            let badgeClass = '';
+
+            if (evDate < now && evDateStr !== todayStr) {
+                relativeBadgeText = 'Vergangen';
+                tileClass = 'past-grey';
+                badgeClass = 'badge-grey';
+            } else if (evDateStr === todayStr) {
+                relativeBadgeText = 'Heute';
+                tileClass = 'urgent-red';
+                badgeClass = 'badge-red';
+            } else if (evDateStr === tomorrowStr) {
+                relativeBadgeText = 'Morgen';
+                tileClass = 'urgent-red';
+                badgeClass = 'badge-red';
+            } else if (evDateStr === dayAfterTomorrowStr) {
+                relativeBadgeText = 'Übermorgen';
+                tileClass = 'medium-yellow';
+                badgeClass = 'badge-yellow';
+            } else {
+                relativeBadgeText = fullDateFormatted;
+                tileClass = 'far-green';
+                badgeClass = 'badge-green';
+            }
+
+            const tile = document.createElement('div');
+            tile.className = `tile ${tileClass}`;
+            tile.innerHTML = `
+                <div>
+                    <div class="tile-header">
+                        <h3>${escapeHtml(ev.title)}</h3>
+                    </div>
+                    <p>${escapeHtml(ev.description || 'Keine Beschreibung')}</p>
+                </div>
+                <div>
+                    <span class="badge ${badgeClass}">${relativeBadgeText}</span>
+                    <div class="time-text">🕒 ${timeFormatted} Uhr</div>
+                    <div class="actions">
+                        <button class="btn-action" onclick="openEditModal(${ev.id}, '${escapeJs(ev.title)}', '${escapeJs(ev.description)}', '${ev.event_date}')">Bearbeiten</button>
+                        <button class="btn-action delete" onclick="deleteEvent(${ev.id})">Löschen</button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(tile);
+        });
+    }
+
+    document.getElementById('add-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            event_date: document.getElementById('event_date').value
+        };
+
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        document.getElementById('add-form').reset();
+        loadEvents();
+    });
+
+    async function deleteEvent(id) {
+        if (confirm("Termin wirklich löschen?")) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            loadEvents();
+        }
+    }
+
+    function openEditModal(id, title, desc, date) {
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-title').value = title;
+        document.getElementById('edit-description').value = desc;
+        document.getElementById('edit-event_date').value = date;
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('edit-modal').style.display = 'none';
+    }
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value;
+        const payload = {
+            title: document.getElementById('edit-title').value,
+            description: document.getElementById('edit-description').value,
+            event_date: document.getElementById('edit-event_date').value
+        };
+
+        await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        closeModal();
+        loadEvents();
+    });
+
+    function escapeHtml(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function escapeJs(text) {
+        return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    loadEvents();
+</script>
+</body>
+</html>
