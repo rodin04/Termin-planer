@@ -55,3 +55,31 @@ The backend server runs directly on the **Raspberry Pi 5** within a private **Ta
 
 * **Process Management & Auto-Healing (`start.sh`):**
   The Shell script dynamically detects active running instances using `pgrep`. If an instance is found, it safely prompts for a restart and terminates the old process ID before launching `nohup`. It captures process execution logs directly into `app.log` and verifies process startup via PID tracking (`$!`).
+
+
+## 📸 Code Highlights & Core Components
+
+### 1. Multithreaded Background Execution (`backend.py`)
+<p align="center">
+  <img src="code-preview-1.png" alt="Threading Setup" width="650" style="max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #333;">
+</p>
+
+* **Asynchronous Execution:** Launches the email scheduler on an independent Python background thread (`daemon=True`). This guarantees that heavy background operations never block incoming HTTP requests or slow down the web interface UI.
+
+---
+
+### 2. Midnight Timer & Cron Logic (`backend.py`)
+<p align="center">
+  <img src="code-preview-2.png" alt="Midnight Calculation" width="650" style="max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #333;">
+</p>
+
+* **Smart Sleep Calculation:** Instead of querying the database constantly every second, the script dynamically calculates the exact remaining seconds until 0:00 AM (`seconds_until_midnight`) and puts the thread to sleep until the next day triggers.
+
+---
+
+### 3. Persistent Process Launch (`start.sh`)
+<p align="center">
+  <img src="code-preview-3.png" alt="Nohup Launch" width="650" style="max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #333;">
+</p>
+
+* **Persistent Background Hosting:** Executes the Flask application using `nohup` combined with `&`. This keeps the application running continuously on the Raspberry Pi 5 even after closing SSH terminal connections, while redirecting all system logs to `app.log`.
